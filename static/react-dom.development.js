@@ -29894,20 +29894,6 @@
       rendererPackageName: 'react-dom'
     });
   
-    {
-      if (!foundDevTools && canUseDOM && window.top === window.self) {
-        // If we're in Chrome or Firefox, provide a download link if not installed.
-        if (navigator.userAgent.indexOf('Chrome') > -1 && navigator.userAgent.indexOf('Edge') === -1 || navigator.userAgent.indexOf('Firefox') > -1) {
-          var protocol = window.location.protocol; // Don't warn in exotic cases like chrome-extension://.
-  
-          if (/^(https?|file):$/.test(protocol)) {
-            // eslint-disable-next-line react-internal/no-production-logging
-            console.info('%cDownload the React DevTools ' + 'for a better development experience: ' + 'https://reactjs.org/link/react-devtools' + (protocol === 'file:' ? '\nYou might need to use a local HTTP server (instead of file://): ' + 'https://reactjs.org/link/react-devtools-faq' : ''), 'font-weight:bold');
-          }
-        }
-      }
-    }
-  
     exports.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = Internals;
     exports.createPortal = createPortal$1;
     exports.createRoot = createRoot$1;
