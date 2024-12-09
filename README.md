@@ -7,4 +7,4 @@ $ ./init.bash
 ```
 The website will then be open at `http://localhost:3000`
 
-This file installs dependences, compiles the .jsx files, and starts the server.
+This file installs dependences, compiles the .jsx files, starts the database and local webserver.
