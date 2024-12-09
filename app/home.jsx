@@ -1,8 +1,8 @@
 function SigDisplay({sigId, name, leadName, room, meetingDay, meetingTime}) {
     return (
         <div className="sig-display" key={sigId}>
-            <div className="sig-name" key={sigId}>{name}</div>
-            <p className="sig-info" key={sigId}>
+            <h2 className="sig-name">{name}</h2>
+            <p className="sig-info">
                 Lead: {leadName}<br/>
                 Room: {room}<br/>
                 Meeting Day: {meetingDay}<br/>
@@ -12,19 +12,76 @@ function SigDisplay({sigId, name, leadName, room, meetingDay, meetingTime}) {
     );
 }
 
+function StudentDisplay({studentId, studentName}) {
+    const [eventList, setEventList] = React.useState([]);
+
+    const [attendancePoints, setAttendancePoints] = React.useState(0);
+
+    React.useEffect(() => {
+        fetchAttendance();
+    }, []);
+
+    const fetchAttendance = async () => {
+        let attendanceCount = 0;
+
+        const response = await fetch(`/api/events/${studentId}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        const data = await response.json();
+        setEventList(data.events);
+
+        data.events.map((eventItem) => {
+            if (eventItem.hosted == "Hosted") {
+                attendanceCount = attendanceCount + 3;
+            }
+            else {
+                attendanceCount = attendanceCount + 1;
+            }
+        });
+
+        setAttendancePoints(attendanceCount);
+    };
+
+    const formatDate = (unformattedDate) => {
+        const date = new Date(unformattedDate);
+        return date.toDateString();
+    }
+
+    return (
+        <div className="student-display" key={studentId}>
+            <h2 className="student-name" >{studentName}</h2>
+            <p className="attendance-points">Attendance Points: {attendancePoints}</p>
+            <div className="student-attendance">
+                {eventList.map((eventItem) => (
+                    <p key={`${studentId}-${eventItem.id}`}>{eventItem.name}: {formatDate(eventItem.eventDate)}, {eventItem.hosted}</p>   
+                ))}
+            </div>
+        </div>
+    )
+}
+
 function App() {
     const [sigList, setSigList] = React.useState([]);
+    const [studentList, setStudentList] = React.useState([]);
     
     const [sigName, setSigName] = React.useState('');
     const [sigRoom, setSigRoom] = React.useState('');
     const [sigTime, setSigTime] = React.useState("16:00");
     const [sigLead, setSigLead] = React.useState('');
     const [sigDay, setSigDay] = React.useState('');
+    const [eventName, setEventName] = React.useState('');
+    const [studentName, setStudentName] = React.useState('');
+    const [eventSigName, setEventSigName] = React.useState('');
 
     const [showAddSig, setShowAddSig] = React.useState(false);
+    const [showAddAttendance, setShowAddAttendance] = React.useState(false);
 
     React.useEffect(() => {
         fetchSigs();
+        fetchStudents();
     }, []);
 
     const fetchSigs = async () => {
@@ -37,6 +94,17 @@ function App() {
         const data = await response.json();
         setSigList(data.sigs);
     };
+
+    const fetchStudents = async () => {
+        const response = await fetch("/api/students", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        const data = await response.json();
+        setStudentList(data.students);
+    }
 
     const handleSigFormSubmit = async (e) => {
         e.preventDefault();
@@ -54,6 +122,24 @@ function App() {
             }),
         });
         await fetchSigs();
+    };
+
+    const handleAttendanceFormSubmit = async (e) => {
+        e.preventDefault();
+        await fetch(`/api/events`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                eventName: eventName,
+                studentName: studentName,
+                eventSigName: eventSigName
+            }),
+        });
+        
+        setStudentList([]);
+        await fetchStudents();
     };
 
     return (
@@ -75,9 +161,6 @@ function App() {
             <div className="add-sig">
                 <button onClick={() => setShowAddSig(true)}>Add Sig</button>
             </div>
-            {/* <div className="add-attendance">
-                <button onClick={() => setShowAddSig(true)}>Add Sig</button>
-            </div> */}
             {showAddSig && (
                 <form onSubmit={handleSigFormSubmit}>
                     <h2>Add Sig</h2>
@@ -129,6 +212,48 @@ function App() {
                         />
                         <button type="submit">Save SIG</button>
                         <button className="hide-button" onClick={() => setShowAddSig(false)}>Hide</button>
+                    </div>
+                </form>
+            )}
+            <div className="attendance-list">
+                {studentList.map((studentItem) => (
+                    <StudentDisplay 
+                        key={studentItem.id}
+                        studentId={studentItem.id}
+                        studentName={studentItem.name}
+                    />
+                ))}
+            </div>
+            <div className="add-attendance">
+                <button onClick={() => setShowAddAttendance(true)}>Attendance</button>
+            </div>
+            {showAddAttendance && (
+                <form onSubmit={handleAttendanceFormSubmit}>
+                    <h2>Add Attendance</h2>
+                    <div>
+                        <label htmlFor="event-name">Event Name:</label>
+                        <input
+                            id="event-name"
+                            value={eventName}
+                            onChange={(e) => setEventName(e.target.value)}
+                            required
+                        />
+                        <label htmlFor="student-name">Student Name:</label>
+                        <input
+                            id="student-name"
+                            value={studentName}
+                            onChange={(e) => setStudentName(e.target.value)}
+                            required
+                        />
+                        <label htmlFor="event-sig-name">SIG Name:</label>
+                        <input
+                            id="event-sig-name"
+                            value={eventSigName}
+                            onChange={(e) => setEventSigName(e.target.value)}
+                            required
+                        />
+                        <button type="submit">Save Attendance</button>
+                        <button className="hide-button" onClick={() => setShowAddAttendance(false)}>Hide</button>
                     </div>
                 </form>
             )}

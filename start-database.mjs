@@ -7,7 +7,7 @@ function initializeSchema(db) {
             name VARCHAR(255) NOT NULL,
             meetingTime TIME NOT NULL,
             meetingDay VARCHAR(255) NOT NULL,
-            roomId INT,
+            roomId INT NOT NULL,
             FOREIGN KEY (roomId) REFERENCES ROOM(id)
         );
     `).run();
@@ -55,11 +55,11 @@ function initializeSchema(db) {
     `).run();
     db.prepare(`
         CREATE TABLE IF NOT EXISTS ATTENDS (
-            sigId INT,
-            memberId INT,
-            PRIMARY KEY (sigId, memberId),
-            FOREIGN KEY (sigId) REFERENCES SIG(id),
-            FOREIGN KEY (memberId) REFERENCES STUDENT(id)
+            eventId INT,
+            studentId INT,
+            PRIMARY KEY (eventId, studentId),
+            FOREIGN KEY (eventId) REFERENCES EVENT(id),
+            FOREIGN KEY (studentId) REFERENCES STUDENT(id)
         );
     `).run();
 }
